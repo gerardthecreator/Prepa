@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estructuras de Lewis Interactivas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+        });
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        /* Estilos CSS - Comienzo */
+        :root {
+            /* Colores Base - Optimizados para contraste */
+            --primary-color: #3498db; /* Azul vibrante */
+            --secondary-color: #2c3e50; /* Azul oscuro para encabezados/elementos clave */
+            --accent-color: #e74c3c; /* Rojo para electrones/énfasis */
+            --bg-color: #f4f7f6; /* Fondo claro */
+            --card-bg: #ffffff; /* Fondo de tarjeta blanco */
+            --text-color: #333; /* Texto oscuro principal */
+            --border-color: #e0e0e0; /* Borde claro */
+            --shadow-light: rgba(0,0,0,0.08); /* Sombra sutil */
+            --shadow-medium: rgba(0,0,0,0.15); /* Sombra más pronunciada */
+            --anton-font: 'Anton', sans-serif;
+            --transition-speed: 0.3s;
+        }
+
+        /* Dark Mode variables - Contraste mejorado */
+        body.dark-mode {
+            --primary-color: #6da7e6; /* Azul claro para modo oscuro, mantiene energía */
+            --secondary-color: #8bbcdc; /* Azul grisáceo claro para encabezados */
+            --accent-color: #ff8a80; /* Rojo más brillante, legible */
+            --bg-color: #1a202c; /* Fondo muy oscuro, reduce fatiga visual */
+            --card-bg: #2d3748; /* Fondo de tarjeta oscuro, distinto del fondo */
+            --text-color: #e2e8f0; /* Texto muy claro */
+            --border-color: #4a5568; /* Borde oscuro */
+            --shadow-light: rgba(0,0,0,0.4);
+            --shadow-medium: rgba(0,0,0,0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+        }
+
+        .anton-font {
+            font-family: var(--anton-font);
+        }
+
+        header {
+            background-color: var(--secondary-color);
+            color: #fff; /* Blanco puro para contraste */
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px var(--shadow-medium);
+            flex-shrink: 0; /* Previene que el header se encoja */
+        }
+
+        h1 {
+            margin: 0;
+            font-family: var(--anton-font);
+            font-size: clamp(1.8rem, 5vw, 2.5rem); /* Tamaño responsivo para h1 */
+            color: inherit;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 1rem 0.5rem; /* Menor padding horizontal para móviles */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinea arriba en lugar de centrar verticalmente */
+            flex-wrap: wrap;
+            overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+        }
+
+        #app {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--shadow-light);
+            padding: 1rem; /* Padding reducido para móviles */
+            width: 95%; /* Más ancho para móviles */
+            max-width: 900px; /* Mantener max-width para desktop */
+            margin-top: 10px; /* Margen superior reducido */
+            position: relative;
+            overflow: hidden; /* Asegura que no haya desbordamiento */
+        }
+
+        .molecule-selector {
+            margin-bottom: 1rem; /* Margen reducido */
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .molecule-selector label {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 0.95rem; /* Ligeramente más pequeño para móviles */
+        }
+
+        .molecule-selector select {
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+            appearance: none; /* Oculta la flecha nativa */
+            background-repeat: no-repeat;
+            background-position: right 0.7em top 50%;
+            background-size: 0.65em auto;
+            cursor: pointer;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23333333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+        }
+        body.dark-mode .molecule-selector select {
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23e2e8f0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 1rem; /* Margen reducido */
+            font-family: var(--anton-font);
+            font-size: clamp(1.4rem, 4vw, 2rem); /* Responsivo */
+        }
+        h2 span {
+            font-size: 0.8em; /* Fórmula un poco más pequeña */
+            vertical-align: super; /* Subíndices y superíndices */
+            line-height: 0; /* Ajuste para evitar espacio extra */
+        }
+
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem; /* Margen reducido */
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .step-navigation button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem; /* Padding reducido */
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+            transition: background-color var(--transition-speed) ease, transform 0.1s ease;
+            flex: 1; /* Permite que los botones se expandan */
+            min-width: 100px; /* Ancho mínimo para legibilidad */
+        }
+
+        .step-navigation button:hover {
+            filter: brightness(1.2);
+            transform: translateY(-2px);
+        }
+
+        .step-navigation button:disabled {
+            background-color: var(--border-color);
+            color: var(--text-color); /* Color de texto para deshabilitados */
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.5; /* Más opaco para deshabilitado */
+        }
+
+        .step-navigation span {
+            font-size: 1rem; /* Ligeramente más pequeño */
+            font-weight: bold;
+            color: var(--text-color);
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .explanation {
+            background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+            border-left: 5px solid var(--primary-color);
+            padding: 0.8rem; /* Padding reducido */
+            margin-bottom: 1rem; /* Margen reducido */
+            border-radius: 5px;
+            font-size: 0.95rem; /* Tamaño de fuente más pequeño */
+            line-height: 1.5;
+        }
+
+        .lewis-structure-container {
+            background-color: var(--bg-color);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem; /* Padding reducido */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem; /* Margen reducido */
+            overflow: hidden;
+            min-height: 100px; /* Tamaño mínimo del contenedor del SVG */
+            max-height: 250px; /* Altura máxima para evitar que sea demasiado grande en desktop */
+            position: relative;
+            width: 100%; /* Asegura que tome el ancho completo del padre */
+        }
+
+        /* SVG styles - Escalado para viewbox muy pequeño */
+        .lewis-structure-container svg {
+            display: block;
+            width: 100%; /* El SVG toma el 100% del ancho de su contenedor */
+            height: auto; /* Mantiene la proporción */
+            /* El viewBox interno maneja la "magnificación" visual del contenido */
+        }
+
+        .atom-circle {
+            stroke: var(--secondary-color);
+            stroke-width: 0.5px; /* Proporcionalmente más delgado */
+            transition: fill 0.2s ease, stroke 0.2s ease;
+        }
+        .atom-text {
+            font-family: var(--anton-font);
+            font-size: 5px; /* Proporcionalmente más pequeño */
+            fill: var(--text-color);
+            user-select: none;
+        }
+        .electron-dot {
+            fill: var(--accent-color);
+            cursor: grab;
+            r: 1px; /* Radio de electrón proporcionalmente más pequeño */
+        }
+        .bond-line {
+            stroke: var(--secondary-color);
+            stroke-width: 1.5px; /* Proporcionalmente más delgado */
+            stroke-linecap: round;
+        }
+        .formal-charge-text {
+            font-size: 3px; /* Proporcionalmente más pequeño */
+            fill: var(--accent-color);
+            font-weight: bold;
+        }
+        .highlighted-atom .atom-circle {
+            stroke: var(--primary-color);
+            stroke-width: 1px; /* Proporcionalmente más grueso */
+            fill: color-mix(in srgb, var(--primary-color) 20%, transparent);
+        }
+        .highlighted-bond .bond-line {
+            stroke: var(--primary-color);
+            stroke-width: 2px; /* Proporcionalmente más grueso */
+        }
+        .drag-active {
+            cursor: grabbing !important;
+            opacity: 0.7;
+        }
+
+        .math-notation {
+            text-align: center;
+            font-size: 1rem; /* Ligeramente más pequeño */
+            margin-top: 1rem;
+            padding: 0.5rem; /* Padding reducido */
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .extra-actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem; /* Espacio reducido */
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .extra-actions button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 0.6rem 1rem; /* Padding reducido */
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease, transform 0.1s ease;
+            font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+        }
+        .extra-actions button:hover {
+            filter: brightness(1.2);
+            transform: translateY(-2px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 1rem; /* Margen reducido */
+            color: #777;
+            font-size: 0.8rem; /* Tamaño de fuente más pequeño */
+            background-color: var(--card-bg);
+            box-shadow: 0 -2px 5px var(--shadow-light);
+            flex-shrink: 0; /* Previene que el footer se encoja */
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.dark-mode .loading-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--text-color);
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .loading-spinner {
+            border: 3px solid var(--primary-color);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 15px; /* Más cerca del borde para móviles */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Espacio reducido */
+            z-index: 10000;
+            pointer-events: none;
+            max-width: 90%; /* Limita el ancho en móviles */
+        }
+        .toast {
+            background-color: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 8px 12px; /* Padding reducido */
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(15px); /* Desplazamiento reducido */
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            pointer-events: auto;
+            font-size: 0.85rem; /* Tamaño de fuente más pequeño */
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success { background-color: rgba(46, 204, 113, 0.9); }
+        .toast.error { background-color: rgba(231, 76, 60, 0.9); }
+        .toast.info { background-color: rgba(52, 152, 219, 0.9); }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 15px; /* Más cerca del borde para móviles */
+            right: 15px; /* Más cerca del borde para móviles */
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 35px; /* Tamaño más pequeño */
+            height: 35px; /* Tamaño más pequeño */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px var(--shadow-light);
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+            z-index: 9999;
+        }
+        .theme-toggle svg {
+            fill: var(--text-color);
+            transition: fill var(--transition-speed);
+            width: 20px; /* Tamaño del icono más pequeño */
+            height: 20px; /* Tamaño del icono más pequeño */
+        }
+
+        /* Tutorial/Help Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6); /* Fondo más oscuro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 1.5rem; /* Padding reducido */
+            border-radius: 8px;
+            box-shadow: 0 5px 15px var(--shadow-medium);
+            max-width: 90%; /* Más ancho para móviles */
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(-30px); /* Desplazamiento reducido */
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            color: var(--text-color);
+            font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+        }
+        .modal-content h3 {
+            font-size: 1.2rem; /* Tamaño de encabezado más pequeño */
+            margin-top: 0;
+            margin-bottom: 0.8rem;
+        }
+        .modal-content ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+        .modal-content li {
+            margin-bottom: 0.4rem;
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 8px; /* Más cerca del borde */
+            right: 8px; /* Más cerca del borde */
+            background: none;
+            border: none;
+            font-size: 1.4rem; /* Tamaño de botón más pequeño */
+            cursor: pointer;
+            color: var(--text-color);
+            line-height: 1;
+        }
+
+        /* Media Queries para responsividad (asegurar el escalado descendente) */
+        @media (min-width: 600px) {
+            #app {
+                padding: 1.5rem; /* Vuelve a un padding más grande en desktop */
+                margin-top: 20px;
+            }
+            .step-navigation button {
+                padding: 0.75rem 1.25rem;
+                font-size: 1rem;
+            }
+            .extra-actions button {
+                padding: 0.75rem 1.25rem;
+                font-size: 1rem;
+            }
+            .step-navigation span {
+                font-size: 1.2rem;
+            }
+            .explanation {
+                padding: 1rem;
+                font-size: 1.1rem;
+            }
+            .math-notation {
+                padding: 0.75rem;
+                font-size: 1.2rem;
+            }
+            .lewis-structure-container {
+                padding: 1rem;
+                min-height: 250px;
+                max-height: none; /* Eliminar restricción de altura en desktop */
+            }
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+                top: 20px;
+                right: 20px;
+            }
+            .theme-toggle svg {
+                width: 24px;
+                height: 24px;
+            }
+            .modal-content {
+                padding: 2rem;
+                max-width: 600px;
+                font-size: 1rem;
+            }
+            .modal-content h3 {
+                font-size: 1.5rem;
+            }
+        }
+        /* Estilos CSS - Fin */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Estructuras de Lewis Interactivas</h1>
+    </header>
+
+    <main id="app-container">
+        <div id="app">
+            <div class="loading-overlay" :class="{ 'active': isLoading }" aria-live="polite" aria-label="Cargando contenido">
+                <div class="loading-spinner"></div>
+                <p>Cargando estructura...</p>
+            </div>
+
+            <section class="molecule-selector">
+                <label for="molecules">Selecciona una molécula:</label>
+                <select id="molecules" v-model="selectedMoleculeId" @change="loadMolecule" aria-controls="lewis-structure-area">
+                    <option v-for="mol in moleculesList" :value="mol.id" :key="mol.id">{{ mol.name }}</option>
+                </select>
+            </section>
+
+            <template v-if="currentMolecule">
+                <h2 class="anton-font">{{ currentMolecule.name }} <span v-html="currentMolecule.formulaHtml"></span></h2>
+
+                <div class="step-navigation" role="navigation" aria-label="Navegación de pasos de la estructura de Lewis">
+                    <button @click="prevStep" :disabled="currentStepIndex === 0" aria-label="Paso anterior">Anterior</button>
+                    <span class="anton-font" aria-live="polite">Paso {{ currentStepIndex + 1 }} de {{ currentMolecule.steps.length }}</span>
+                    <button @click="nextStep" :disabled="currentStepIndex === currentMolecule.steps.length - 1" aria-label="Paso siguiente">Siguiente</button>
+                </div>
+
+                <div class="explanation" v-html="currentStep.explanation" aria-live="polite"></div>
+
+                <div class="lewis-structure-container" id="lewis-structure-area">
+                    <svg :width="svgWidth" :height="svgHeight" viewBox="0 0 100 50"
+                         aria-label="Diagrama de la estructura de Lewis actual">
+                        <line v-for="bond in currentStep.bonds" :key="'bond-' + bond.id"
+                              :x1="bond.x1" :y1="bond.y1" :x2="bond.x2" :y2="bond.y2"
+                              :stroke="bond.color || 'var(--secondary-color)'" :stroke-width="bond.width || 1.5"
+                              class="bond-line"
+                              :class="{'highlighted-bond': bond.highlighted}"></line>
+
+                        <g v-for="atom in currentStep.atoms" :key="'atom-' + atom.id"
+                           :transform="`translate(${atom.x}, ${atom.y})`"
+                           class="atom-group"
+                           :class="{'highlighted-atom': atom.highlighted}">
+                            <circle :r="atom.radius" :fill="atom.color || 'transparent'" class="atom-circle"></circle>
+                            <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" class="atom-text">{{ atom.symbol }}</text>
+                            <text v-if="atom.formal_charge !== undefined && atom.formal_charge !== '' && atom.formal_charge !== '0'"
+                                  :x="atom.radius * 0.7 + 0.5" :y="-atom.radius * 0.7 + 0.5" class="formal-charge-text">
+                                {{ atom.formal_charge > 0 ? '+' : '' }}{{ atom.formal_charge }}
+                            </text>
+                            <circle v-for="(electron, index) in interactiveElectrons[atom.id]"
+                                    :key="atom.id + '-e-' + index"
+                                    :cx="electron.x"
+                                    :cy="electron.y"
+                                    r="1" class="electron-dot"
+                                    @mousedown="startDragElectron(atom.id, index, $event)"
+                                    @touchstart="startDragElectron(atom.id, index, $event)">
+                            </circle>
+                        </g>
+                    </svg>
+                </div>
+                <div class="math-notation" v-html="renderedMathJax"></div>
+
+                <div class="extra-actions">
+                    <button @click="downloadScreenshot" aria-label="Descargar estructura actual">Descargar Estructura</button>
+                    <button @click="resetCurrentMolecule" aria-label="Reiniciar estructura actual">Reiniciar Estructura</button>
+                    <button @click="openTutorialModal" aria-label="Mostrar ayuda y tutorial de uso">Ayuda / Tutorial</button>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Gerardo ᕙ⁠(⁠ ⁠ ⁠•⁠ ⁠‿⁠ ⁠•⁠ ⁠ ⁠)⁠ᕗ</p>
+    </footer>
+
+    <div class="theme-toggle" @click="toggleDarkMode" tabindex="0" role="button" :aria-label="`Activar modo ${isDarkMode ? 'claro' : 'oscuro'}`">
+        <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.34 2.42-3.91 2.97-2.29.75-4.78-.29-6.07-2.58C7.15 10.42 7.7 7.57 9.8 6.07c.68-.43 1.34-.84 2-1.21V3zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.36 0 2.6-.47 3.67-1.28-.2.99-.47 1.97-.89 2.9-.84 1.83-2.6 3.16-4.69 3.45-1.07.15-2.14.0-3.15-.36-1.08-.39-2.02-.99-2.82-1.74-1.23-1.16-1.92-2.73-1.92-4.42 0-3.31 2.69-6 6-6s6 2.69 6 6c0 .48-.06.94-.17 1.38-.98 1.37-2.34 2.42-3.91 2.97-2.29.75-4.78-.29-6.07-2.58C7.15 10.42 7.7 7.57 9.8 6.07c.68-.43 1.34-.84 2-1.21V3zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.36 0 2.6-.47 3.67-1.28-.2.99-.47 1.97-.89 2.9-.84 1.83-2.6 3.16-4.69 3.45-1.07.15-2.14.0-3.15-.36-1.08-.39-2.02-.99-2.82-1.74-1.23-1.16-1.92-2.73-1.92-4.42 0-3.31 2.69-6 6-6s6 2.69 6 6z"/></svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 2c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zM11 5h2v6h-2zM11 13h2v2h-2z"/></svg>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <div class="modal-overlay" :class="{'show': showTutorialModal}" @click.self="showTutorialModal = false" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div class="modal-content">
+            <button class="modal-close-button" @click="showTutorialModal = false" aria-label="Cerrar tutorial">&times;</button>
+            <h3 id="tutorial-title" class="anton-font">¿Cómo usar esta aplicación?</h3>
+            <p>¡Bienvenido! Esta herramienta interactiva te guiará paso a paso para construir estructuras de Lewis.</p>
+            <ul>
+                <li><strong>Selección de Molécula:</strong> Usa el menú desplegable "Selecciona una molécula" para elegir el compuesto que quieres analizar.</li>
+                <li><strong>Navegación por Pasos:</strong> Usa los botones "Anterior" y "Siguiente" para avanzar o retroceder en el proceso de construcción de la estructura. Cada paso te proporcionará una explicación detallada.</li>
+                <li><strong>Interactividad con Electrones:</strong> En algunos pasos, podrás arrastrar y soltar los puntos que representan electrones para formar pares libres o enlaces. Intenta moverlos y observa el resultado.</li>
+                <li><strong>Cálculos y Cargas Formales:</strong> La aplicación te mostrará los electrones de valencia y las cargas formales para ayudarte a entender la estabilidad de la estructura.</li>
+                <li><strong>Modo Oscuro:</strong> Haz clic en el icono de Sol/Luna en la esquina superior derecha para cambiar entre el modo claro y oscuro.</li>
+                <li><strong>Descargar Estructura:</strong> El botón "Descargar Estructura" te permitirá guardar la imagen de la estructura actual.</li>
+                <li><strong>Reiniciar Estructura:</strong> Si quieres empezar de nuevo con la molécula actual, usa el botón "Reiniciar Estructura".</li>
+            </ul>
+            <p>¡Esperamos que disfrutes aprendiendo sobre las Estructuras de Lewis de una manera interactiva!</p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript Logic - Comienzo
+        // --- UTILITIES (for single file) ---
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.querySelector('.toast-container') || (() => {
+                const div = document.createElement('div');
+                div.className = 'toast-container';
+                document.body.appendChild(div);
+                return div;
+            })();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = message;
+            container.appendChild(toast);
+
+            // Trigger reflow to apply initial opacity: 0 and transform
+            void toast.offsetWidth;
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, duration);
+        }
+
+        // --- MATH UTILITIES (for electron positioning) ---
+        function getElectronPositions(count, electronRadius, atomRadius) {
+            const positions = [];
+            // Adjusted baseOffset for the new, much smaller SVG scale
+            const baseOffset = atomRadius + electronRadius + 0.5; // Distance from atom center to electron, adjusted for visibility in tiny viewBox
+
+            for (let i = 0; i < count; i++) {
+                const angle = (i * (2 * Math.PI / count)) + (Math.PI / 8); // Start slightly offset
+                positions.push({
+                    x: baseOffset * Math.cos(angle),
+                    y: baseOffset * Math.sin(angle)
+                });
+            }
+            return positions;
+        }
+
+        // --- DATA (Molecule Definitions - Adjusted for new, smaller SVG coordinates) ---
+        const moleculesData = [
+            {
+                id: 'h2nnh2',
+                name: 'Hidrazina',
+                formula: 'H$_2$NNH$_2$',
+                formulaHtml: 'H₂NNH₂',
+                steps: [
+                    {
+                        explanation: "Paso 1: Calcular los electrones de valencia totales. <ul><li>Hidrógeno (H): 1 valencia x 4 átomos = 4</li><li>Nitrógeno (N): 5 valencia x 2 átomos = 10</li><li>Total: 4 + 10 = <strong>14 electrones de valencia</strong>.</li></ul>",
+                        mathJax: "H_2NNH_2",
+                        atoms: [
+                            // Coordenadas ajustadas para viewBox="0 0 100 50"
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'N1', symbol: 'N', x: 30, y: 25, radius: 4, color: '#ffcc80', formal_charge: '' },
+                            { id: 'N2', symbol: 'N', x: 40, y: 25, radius: 4, color: '#ffcc80', formal_charge: '' },
+                            { id: 'H2', symbol: 'H', x: 50, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'H3', symbol: 'H', x: 30, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'H4', symbol: 'H', x: 40, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                        ],
+                        bonds: [],
+                        valence_electrons_per_atom: {
+                            'H1': 0, 'N1': 0, 'N2': 0, 'H2': 0, 'H3': 0, 'H4': 0
+                        }
+                    },
+                    {
+                        explanation: "Paso 2: Dibujar el esqueleto de la molécula. Los átomos de N son el centro y los hidrógenos se unen a ellos. Se utilizan 10 electrones en los 5 enlaces simples.",
+                        mathJax: "H_2N-NH_2",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'N1', symbol: 'N', x: 30, y: 25, radius: 4, color: '#ffcc80', formal_charge: '' },
+                            { id: 'N2', symbol: 'N', x: 40, y: 25, radius: 4, color: '#ffcc80', formal_charge: '' },
+                            { id: 'H2', symbol: 'H', x: 50, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'H3', symbol: 'H', x: 30, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'H4', symbol: 'H', x: 40, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                        ],
+                        bonds: [
+                            { id: 'bH1N1', x1: 20, y1: 25, x2: 30, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bN1N2', x1: 30, y1: 25, x2: 40, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bN2H2', x1: 40, y1: 25, x2: 50, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bN1H3', x1: 30, y1: 25, x2: 30, y2: 15, width: 1.5, highlighted: true },
+                            { id: 'bN2H4', x1: 40, y1: 25, x2: 40, y2: 15, width: 1.5, highlighted: true },
+                        ],
+                        valence_electrons_per_atom: {
+                            'H1': 0, 'N1': 0, 'N2': 0, 'H2': 0, 'H3': 0, 'H4': 0
+                        }
+                    },
+                    {
+                        explanation: "Paso 3: Distribuir los 4 electrones de valencia restantes (14 totales - 10 usados en enlaces). Cada átomo de nitrógeno necesita un par libre para completar su octeto.",
+                        mathJax: "H_2N-NH_2",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'N1', symbol: 'N', x: 30, y: 25, radius: 4, color: '#ffcc80', formal_charge: '0' },
+                            { id: 'N2', symbol: 'N', x: 40, y: 25, radius: 4, color: '#ffcc80', formal_charge: '0' },
+                            { id: 'H2', symbol: 'H', x: 50, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'H3', symbol: 'H', x: 30, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'H4', symbol: 'H', x: 40, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                        ],
+                        bonds: [
+                            { id: 'bH1N1', x1: 20, y1: 25, x2: 30, y2: 25, width: 1.5 },
+                            { id: 'bN1N2', x1: 30, y1: 25, x2: 40, y2: 25, width: 1.5 },
+                            { id: 'bN2H2', x1: 40, y1: 25, x2: 50, y2: 25, width: 1.5 },
+                            { id: 'bN1H3', x1: 30, y1: 25, x2: 30, y2: 15, width: 1.5 },
+                            { id: 'bN2H4', x1: 40, y1: 25, x2: 40, y2: 15, width: 1.5 },
+                        ],
+                        // 2 electrones (1 par) en cada N
+                        valence_electrons_per_atom: {
+                            'H1': 0, 'N1': 2, 'N2': 2, 'H2': 0, 'H3': 0, 'H4': 0
+                        }
+                    },
+                    {
+                        explanation: "Paso 4: Verificar octetos y calcular cargas formales. Todos los átomos tienen octeto (o dúo para H).<br>Carga formal = (Valencia) - (e- no enlazantes) - (1/2 * e- enlazantes).<br>Para N: 5 - 2 - (1/2 * 6) = 5 - 2 - 3 = 0.<br>Para H: 1 - 0 - (1/2 * 2) = 1 - 0 - 1 = 0.  Todos son 0. ¡Estructura final!",
+                        mathJax: "H_2NNH_2",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'N1', symbol: 'N', x: 30, y: 25, radius: 4, color: '#ffcc80', formal_charge: '0' },
+                            { id: 'N2', symbol: 'N', x: 40, y: 25, radius: 4, color: '#ffcc80', formal_charge: '0' },
+                            { id: 'H2', symbol: 'H', x: 50, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'H3', symbol: 'H', x: 30, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'H4', symbol: 'H', x: 40, y: 15, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                        ],
+                        bonds: [
+                            { id: 'bH1N1', x1: 20, y1: 25, x2: 30, y2: 25, width: 1.5 },
+                            { id: 'bN1N2', x1: 30, y1: 25, x2: 40, y2: 25, width: 1.5 },
+                            { id: 'bN2H2', x1: 40, y1: 25, x2: 50, y2: 25, width: 1.5 },
+                            { id: 'bN1H3', x1: 30, y1: 25, x2: 30, y2: 15, width: 1.5 },
+                            { id: 'bN2H4', x1: 40, y1: 25, x2: 40, y2: 15, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: {
+                            'H1': 0, 'N1': 2, 'N2': 2, 'H2': 0, 'H3': 0, 'H4': 0
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'hooh',
+                name: 'Peróxido de Hidrógeno',
+                formula: 'HOOH',
+                formulaHtml: 'HOOH',
+                steps: [
+                    {
+                        explanation: "Paso 1: Calcular electrones de valencia. H: 1 x 2 = 2. O: 6 x 2 = 12. Total: 2+12 = <strong>14 electrones de valencia</strong>.",
+                        mathJax: "HOOH",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 35, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O2', symbol: 'O', x: 65, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'H2', symbol: 'H', x: 80, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                        ],
+                        bonds: [],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 0, 'O2': 0, 'H2': 0 }
+                    },
+                    {
+                        explanation: "Paso 2: Dibujar el esqueleto. H-O-O-H. Un oxígeno se une al otro, y cada uno se une a un hidrógeno. Se utilizan 6 electrones en los 3 enlaces simples.",
+                        mathJax: "H-O-O-H",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 35, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O2', symbol: 'O', x: 65, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'H2', symbol: 'H', x: 80, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                        ],
+                        bonds: [
+                            { id: 'bH1O1', x1: 20, y1: 25, x2: 35, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bO1O2', x1: 35, y1: 25, x2: 65, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bO2H2', x1: 65, y1: 25, x2: 80, y2: 25, width: 1.5, highlighted: true },
+                        ],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 0, 'O2': 0, 'H2': 0 }
+                    },
+                    {
+                        explanation: "Paso 3: Distribuir los 8 electrones restantes (14 totales - 6 usados en enlaces). Cada oxígeno necesita 4 electrones (2 pares libres) para completar su octeto. Arrastra los puntos rojos para formar los pares.",
+                        mathJax: "H-O-O-H",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'O1', symbol: 'O', x: 35, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                            { id: 'O2', symbol: 'O', x: 65, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                            { id: 'H2', symbol: 'H', x: 80, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                        ],
+                        bonds: [
+                            { id: 'bH1O1', x1: 20, y1: 25, x2: 35, y2: 25, width: 1.5 },
+                            { id: 'bO1O2', x1: 35, y1: 25, x2: 65, y2: 25, width: 1.5 },
+                            { id: 'bO2H2', x1: 65, y1: 25, x2: 80, y2: 25, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 4, 'O2': 4, 'H2': 0 } // Each O gets 2 lone pairs (4 electrons)
+                    },
+                     {
+                        explanation: "Paso 4: Verificar octetos y calcular cargas formales. Todos los átomos cumplen octeto/dúo.<br>Para H: 1 - 0 - (1/2 * 2) = 0.<br>Para O: 6 - 4 - (1/2 * 4) = 0. ¡Estructura final con cargas formales de 0!",
+                        mathJax: "H-O-O-H",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 20, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'O1', symbol: 'O', x: 35, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                            { id: 'O2', symbol: 'O', x: 65, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                            { id: 'H2', symbol: 'H', x: 80, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                        ],
+                        bonds: [
+                            { id: 'bH1O1', x1: 20, y1: 25, x2: 35, y2: 25, width: 1.5 },
+                            { id: 'bO1O2', x1: 35, y1: 25, x2: 65, y2: 25, width: 1.5 },
+                            { id: 'bO2H2', x1: 65, y1: 25, x2: 80, y2: 25, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 4, 'O2': 4, 'H2': 0 }
+                    }
+                ]
+            },
+            {
+                id: 'so4_2-',
+                name: 'Ion Sulfato',
+                formula: 'SO$_4^{2-}$',
+                formulaHtml: 'SO₄²⁻',
+                steps: [
+                    {
+                        explanation: "Paso 1: Calcular electrones de valencia. S: 6, O: 6x4=24. Carga iónica: 2-. Total: 6+24+2 = <strong>32 electrones de valencia</strong>.",
+                        mathJax: "SO_4^{2-}",
+                        atoms: [
+                            // Ajuste para mejor visualización en un viewBox de 100x50
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '' }, // Central S
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Top
+                            { id: 'O2', symbol: 'O', x: 50, y: 40, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Bottom
+                            { id: 'O3', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Left
+                            { id: 'O4', symbol: 'O', x: 70, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Right
+                        ],
+                        bonds: [],
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 0, 'O2': 0, 'O3': 0, 'O4': 0 }
+                    },
+                    {
+                        explanation: "Paso 2: Dibujar el esqueleto. Azufre central, oxígenos alrededor. Se utilizan 8 electrones en los 4 enlaces simples. (32 - 8 = 24 electrones restantes).",
+                        mathJax: "S-(O)_4",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O2', symbol: 'O', x: 50, y: 40, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O3', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O4', symbol: 'O', x: 70, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5, highlighted: true },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 50, y2: 40, width: 1.5, highlighted: true },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 30, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bS1O4', x1: 50, y1: 25, x2: 70, y2: 25, width: 1.5, highlighted: true },
+                        ],
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 0, 'O2': 0, 'O3': 0, 'O4': 0 }
+                    },
+                    {
+                        explanation: "Paso 3: Distribuir los 24 electrones restantes. Cada oxígeno recibe 6 electrones (3 pares libres) para completar su octeto. El azufre central tiene 8 electrones por ahora.",
+                        mathJax: "SO_4^{2-}",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '2+' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O2', symbol: 'O', x: 50, y: 40, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O3', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O4', symbol: 'O', x: 70, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5 },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 50, y2: 40, width: 1.5 },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 30, y2: 25, width: 1.5 },
+                            { id: 'bS1O4', x1: 50, y1: 25, x2: 70, y2: 25, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 6, 'O2': 6, 'O3': 6, 'O4': 6 } // Each O gets 3 lone pairs (6 electrons)
+                    },
+                     {
+                        explanation: "Paso 4: Resonancia y Cargas Formales. Múltiples estructuras son posibles (resonancia). La forma más estable minimiza las cargas formales al expandir el octeto del Azufre. Aquí se muestra una donde el S tiene dos dobles enlaces y dos simples. Arrastra los pares de electrones de un Oxígeno a un enlace para formar un doble enlace.",
+                        mathJax: "SO_4^{2-}",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '0' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O2', symbol: 'O', x: 50, y: 40, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O3', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' }, // Ahora doble enlazado
+                            { id: 'O4', symbol: 'O', x: 70, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' }, // Ahora doble enlazado
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5 },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 50, y2: 40, width: 1.5 },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 30, y2: 25, width: 3, isDouble: true }, // Doble enlace
+                            { id: 'bS1O4', x1: 50, y1: 25, x2: 70, y2: 25, width: 3, isDouble: true }, // Doble enlace
+                        ],
+                        // O3 y O4 ahora tienen 2 pares libres (4 electrones)
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 6, 'O2': 6, 'O3': 4, 'O4': 4 },
+                        animation: {
+                            type: 'resonance', // Custom animation type for visualization
+                            targets: [
+                                { type: 'bond', id: 'bS1O1', atomId: 'O1', newWidth: 3, oldWidth: 1.5, newElectronsO: 4, oldElectronsO: 6, chargeO: '0' }, // Example for resonance
+                                { type: 'bond', id: 'bS1O3', atomId: 'O3', newWidth: 1.5, oldWidth: 3, newElectronsO: 6, oldElectronsO: 4, chargeO: '-1' } // Example for resonance
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'hoclo',
+                name: 'Ácido Hipocloroso',
+                formula: 'HOClO',
+                formulaHtml: 'HOClO',
+                steps: [
+                    {
+                        explanation: "Paso 1: Calcular electrones de valencia totales. H: 1, O: 6 x 2 = 12, Cl: 7. Total: 1+12+7 = <strong>20 electrones de valencia</strong>.",
+                        mathJax: "HOClO",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 15, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'Cl1', symbol: 'Cl', x: 45, y: 20, radius: 4.5, color: '#ccffcc', formal_charge: '' },
+                            { id: 'O2', symbol: 'O', x: 60, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                        ],
+                        bonds: [],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 0, 'Cl1': 0, 'O2': 0 }
+                    },
+                    {
+                        explanation: "Paso 2: Dibujar el esqueleto (H-O-Cl-O). Se utilizan 6 electrones en los 3 enlaces simples. Restan 14 electrones.",
+                        mathJax: "H-O-Cl-O",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 15, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'Cl1', symbol: 'Cl', x: 45, y: 20, radius: 4.5, color: '#ccffcc', formal_charge: '' },
+                            { id: 'O2', symbol: 'O', x: 60, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                        ],
+                        bonds: [
+                            { id: 'bH1O1', x1: 15, y1: 25, x2: 30, y2: 25, width: 1.5, highlighted: true },
+                            { id: 'bO1Cl1', x1: 30, y1: 25, x2: 45, y2: 20, width: 1.5, highlighted: true },
+                            { id: 'bCl1O2', x1: 45, y1: 20, x2: 60, y2: 25, width: 1.5, highlighted: true },
+                        ],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 0, 'Cl1': 0, 'O2': 0 }
+                    },
+                    {
+                        explanation: "Paso 3: Distribuir los 14 electrones restantes para satisfacer los octetos. Cada oxígeno obtiene 2 o 3 pares libres, y el cloro obtiene 2 pares libres. Arrastra los electrones para ajustarlos.",
+                        mathJax: "H-O-Cl-O",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 15, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'O1', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                            { id: 'Cl1', symbol: 'Cl', x: 45, y: 20, radius: 4.5, color: '#ccffcc', formal_charge: '0' },
+                            { id: 'O2', symbol: 'O', x: 60, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                        ],
+                        bonds: [
+                            { id: 'bH1O1', x1: 15, y1: 25, x2: 30, y2: 25, width: 1.5 },
+                            { id: 'bO1Cl1', x1: 30, y1: 25, x2: 45, y2: 20, width: 1.5 },
+                            { id: 'bCl1O2', x1: 45, y1: 20, x2: 60, y2: 25, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 4, 'Cl1': 4, 'O2': 6 } // O1 gets 2 pairs, Cl gets 2 pairs, O2 gets 3 pairs
+                    },
+                    {
+                        explanation: "Paso 4: Verificar octetos y calcular cargas formales. Todos los átomos cumplen con la regla del octeto (o dúo para H) y las cargas formales son cero. ¡Estructura final!",
+                        mathJax: "H-O-Cl-O",
+                        atoms: [
+                            { id: 'H1', symbol: 'H', x: 15, y: 25, radius: 3, color: '#c2e0ff', formal_charge: '0' },
+                            { id: 'O1', symbol: 'O', x: 30, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                            { id: 'Cl1', symbol: 'Cl', x: 45, y: 20, radius: 4.5, color: '#ccffcc', formal_charge: '0' },
+                            { id: 'O2', symbol: 'O', x: 60, y: 25, radius: 4, color: '#FFCCCB', formal_charge: '0' },
+                        ],
+                        bonds: [
+                            { id: 'bH1O1', x1: 15, y1: 25, x2: 30, y2: 25, width: 1.5 },
+                            { id: 'bO1Cl1', x1: 30, y1: 25, x2: 45, y2: 20, width: 1.5 },
+                            { id: 'bCl1O2', x1: 45, y1: 20, x2: 60, y2: 25, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'H1': 0, 'O1': 4, 'Cl1': 4, 'O2': 6 }
+                    }
+                ]
+            },
+            {
+                id: 'so3_2-',
+                name: 'Ion Sulfito',
+                formula: 'SO$_3^{2-}$',
+                formulaHtml: 'SO₃²⁻',
+                steps: [
+                    {
+                        explanation: "Paso 1: Calcular electrones de valencia totales. S: 6, O: 6 x 3 = 18. Carga iónica: 2- (añadir 2e-). Total: 6+18+2 = <strong>26 electrones de valencia</strong>.",
+                        mathJax: "SO_3^{2-}",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '' }, // Central S
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Top
+                            { id: 'O2', symbol: 'O', x: 30, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Bottom-left
+                            { id: 'O3', symbol: 'O', x: 70, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '' }, // Bottom-right
+                        ],
+                        bonds: [],
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 0, 'O2': 0, 'O3': 0 }
+                    },
+                    {
+                        explanation: "Paso 2: Dibujar el esqueleto. Azufre central, tres oxígenos alrededor. Se utilizan 6 electrones en los 3 enlaces simples. Restan 20 electrones.",
+                        mathJax: "S-(O)_3",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O2', symbol: 'O', x: 30, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                            { id: 'O3', symbol: 'O', x: 70, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '' },
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5, highlighted: true },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 30, y2: 35, width: 1.5, highlighted: true },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 70, y2: 35, width: 1.5, highlighted: true },
+                        ],
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 0, 'O2': 0, 'O3': 0 }
+                    },
+                    {
+                        explanation: "Paso 3: Distribuir los 20 electrones restantes para satisfacer los octetos de los oxígenos. Cada oxígeno recibe 6 electrones (3 pares libres). Quedan 2 electrones.",
+                        mathJax: "SO_3^{2-}",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O2', symbol: 'O', x: 30, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O3', symbol: 'O', x: 70, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5 },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 30, y2: 35, width: 1.5 },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 70, y2: 35, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'S1': 0, 'O1': 6, 'O2': 6, 'O3': 6 } // Each O gets 3 lone pairs (6 electrons)
+                    },
+                    {
+                        explanation: "Paso 4: Colocar los 2 electrones restantes en el azufre central como un par libre. Ahora todos los átomos tienen octeto (o dúo).",
+                        mathJax: "SO_3^{2-}",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '+1' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O2', symbol: 'O', x: 30, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O3', symbol: 'O', x: 70, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5 },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 30, y2: 35, width: 1.5 },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 70, y2: 35, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'S1': 2, 'O1': 6, 'O2': 6, 'O3': 6 } // S gets 1 lone pair (2 electrons)
+                    },
+                    {
+                        explanation: "Paso 5: Verificar octetos y calcular cargas formales. El S tiene una carga formal de +1, y cada O tiene -1. La carga total es 2-. Se puede considerar resonancia formando un doble enlace para minimizar cargas formales, pero esta es una estructura aceptable.",
+                        mathJax: "SO_3^{2-}",
+                        atoms: [
+                            { id: 'S1', symbol: 'S', x: 50, y: 25, radius: 5, color: '#FFFF99', formal_charge: '+1' },
+                            { id: 'O1', symbol: 'O', x: 50, y: 10, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O2', symbol: 'O', x: 30, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                            { id: 'O3', symbol: 'O', x: 70, y: 35, radius: 4, color: '#FFCCCB', formal_charge: '-1' },
+                        ],
+                        bonds: [
+                            { id: 'bS1O1', x1: 50, y1: 25, x2: 50, y2: 10, width: 1.5 },
+                            { id: 'bS1O2', x1: 50, y1: 25, x2: 30, y2: 35, width: 1.5 },
+                            { id: 'bS1O3', x1: 50, y1: 25, x2: 70, y2: 35, width: 1.5 },
+                        ],
+                        valence_electrons_per_atom: { 'S1': 2, 'O1': 6, 'O2': 6, 'O3': 6 }
+                    }
+                ]
+            }
+        ];
+
+        // --- VUE.JS APP ---
+        new Vue({
+            el: '#app',
+            data: {
+                moleculesList: moleculesData.map(mol => ({ id: mol.id, name: mol.name })),
+                selectedMoleculeId: 'h2nnh2',
+                currentMolecule: null,
+                currentStepIndex: 0,
+                // These define the *base size* for the SVG, which will then scale via CSS
+                // The viewBox (in SVG tag) is what sets the internal coordinate system
+                svgWidth: 100,
+                svgHeight: 50,
+                isLoading: false,
+                isDraggingElectron: false,
+                draggedElectron: null, // { atomId, electronIndex, startX, startY }
+                originalMouseOffset: { x: 0, y: 0 }, // Offset from mouse click to electron center
+                isDarkMode: false,
+                showTutorialModal: false,
+                interactiveElectrons: {}, // Stores current interactive positions for reactivity
+            },
+            mounted() {
+                this.loadMolecule();
+                this.detectDarkModePreference();
+                // Attach global mouse/touch up/move listeners for electron drag
+                document.addEventListener('mouseup', this.endDragElectron);
+                document.addEventListener('touchend', this.endDragElectron);
+                document.addEventListener('mousemove', this.doDragElectron);
+                document.addEventListener('touchmove', this.doDragElectron, { passive: false }); // Use passive: false for preventDefault
+                // Set initial body class based on dark mode preference
+                document.body.classList.toggle('dark-mode', this.isDarkMode);
+
+                // Show tutorial on first visit
+                if (!localStorage.getItem('lewisAppTutorialShown')) {
+                    this.showTutorialModal = true;
+                    localStorage.setItem('lewisAppTutorialShown', 'true');
+                }
+            },
+            computed: {
+                currentStep() {
+                    if (!this.currentMolecule) return null;
+                    const step = this.currentMolecule.steps[this.currentStepIndex];
+                    
+                    // Recalculate electron positions based on current step's valence_electrons_per_atom
+                    if (step && step.atoms) {
+                         const newInteractiveElectrons = {};
+                         let changed = false;
+                         step.atoms.forEach(atom => {
+                            const numElectrons = step.valence_electrons_per_atom[atom.id] || 0;
+                            const currentElectronCount = this.interactiveElectrons[atom.id] ? this.interactiveElectrons[atom.id].length : 0;
+
+                            if (numElectrons !== currentElectronCount) {
+                                newInteractiveElectrons[atom.id] = getElectronPositions(numElectrons, 1, atom.radius); // Electron radius adjusted to 1
+                                changed = true;
+                            } else if (this.interactiveElectrons[atom.id]) {
+                                newInteractiveElectrons[atom.id] = [...this.interactiveElectrons[atom.id]]; // Keep current positions if same count
+                            } else {
+                                newInteractiveElectrons[atom.id] = [];
+                            }
+                         });
+
+                         // Only update the reactive property if there's a real change to avoid unnecessary re-renders
+                         if (changed || Object.keys(this.interactiveElectrons).length === 0 || !this.interactiveElectrons[step.atoms[0]?.id]) { // Check for initial load too
+                             this.interactiveElectrons = newInteractiveElectrons;
+                         }
+                    }
+                    return step;
+                },
+                renderedMathJax() {
+                    if (!this.currentStep || !this.currentStep.mathJax) return '';
+                    // MathJax will parse this string. Ensure HTML entities are handled if needed.
+                    // Replace <br> with MathJax's \\ for new line inside equations
+                    return `$$\\text{${this.currentStep.explanation.replace(/<\/?ul>|<\/?li>|<strong>|<\/strong>/g, '').replace(/<br>/g, '\\\\')}}$$$$\\quad$$$$${this.currentStep.mathJax}$$`;
+                }
+            },
+            methods: {
+                // --- Core Molecule Logic ---
+                loadMolecule() {
+                    this.isLoading = true;
+                    this.currentMolecule = moleculesData.find(mol => mol.id === this.selectedMoleculeId);
+                    this.currentStepIndex = 0;
+                    this.interactiveElectrons = {}; // Reset interactive electrons state for new molecule
+                    
+                    // Initial population of interactiveElectrons for the very first step
+                    if (this.currentMolecule && this.currentMolecule.steps[0] && this.currentMolecule.steps[0].atoms) {
+                         this.currentMolecule.steps[0].atoms.forEach(atom => {
+                            const numElectrons = this.currentMolecule.steps[0].valence_electrons_per_atom[atom.id] || 0;
+                            this.$set(this.interactiveElectrons, atom.id, getElectronPositions(numElectrons, 1, atom.radius));
+                         });
+                    }
+
+                    this.$nextTick(() => {
+                        // Ensure MathJax typesets the new content after DOM update
+                        if (typeof MathJax !== 'undefined' && MathJax.Hub) {
+                             MathJax.Hub.Queue(["Typeset", MathJax.Hub, this.$el]);
+                        } else {
+                            console.warn("MathJax not loaded or initialized.");
+                        }
+                       
+                        gsap.from(".lewis-structure-container", { opacity: 0, scale: 0.9, duration: 0.5, ease: "back.out(1.7)" });
+                        gsap.from(".explanation", { opacity: 0, y: 20, duration: 0.4, delay: 0.2 });
+                        gsap.from(".step-navigation button", { opacity: 0, y: 10, stagger: 0.1, duration: 0.3 });
+                        this.isLoading = false;
+                        showToast(`Cargada: ${this.currentMolecule.name}`, 'info');
+                    });
+                },
+                nextStep() {
+                    if (this.currentStepIndex < this.currentMolecule.steps.length - 1) {
+                        this.currentStepIndex++;
+                        this.$nextTick(() => {
+                            const step = this.currentMolecule.steps[this.currentStepIndex];
+                            if (step && step.atoms) {
+                                step.atoms.forEach(atom => {
+                                    const numElectrons = step.valence_electrons_per_atom[atom.id] || 0;
+                                    // Update electron positions for the current step, using $set for reactivity
+                                    this.$set(this.interactiveElectrons, atom.id, getElectronPositions(numElectrons, 1, atom.radius));
+                                });
+                            }
+                            if (typeof MathJax !== 'undefined' && MathJax.Hub) {
+                                MathJax.Hub.Queue(["Typeset", MathJax.Hub, this.$el]);
+                            }
+                            gsap.from(".lewis-structure-container", { opacity: 0, x: 50, duration: 0.3, ease: "power2.out" });
+                            this.animateStepChanges();
+                        });
+                    }
+                },
+                prevStep() {
+                    if (this.currentStepIndex > 0) {
+                        this.currentStepIndex--;
+                        this.$nextTick(() => {
+                            const step = this.currentMolecule.steps[this.currentStepIndex];
+                            if (step && step.atoms) {
+                                step.atoms.forEach(atom => {
+                                    const numElectrons = step.valence_electrons_per_atom[atom.id] || 0;
+                                    // Update electron positions for the current step, using $set for reactivity
+                                    this.$set(this.interactiveElectrons, atom.id, getElectronPositions(numElectrons, 1, atom.radius));
+                                });
+                            }
+                            if (typeof MathJax !== 'undefined' && MathJax.Hub) {
+                                MathJax.Hub.Queue(["Typeset", MathJax.Hub, this.$el]);
+                            }
+                            gsap.from(".lewis-structure-container", { opacity: 0, x: -50, duration: 0.3, ease: "power2.out" });
+                            this.animateStepChanges();
+                        });
+                    }
+                },
+                resetCurrentMolecule() {
+                    this.loadMolecule();
+                    showToast('Estructura reiniciada.', 'info');
+                },
+
+                // --- Electron Dragging Interactivity (Improved) ---
+                // Helper to get SVG point from client coordinates
+                getSVGPoint(svgElement, clientX, clientY) {
+                    try {
+                        const CTM = svgElement.getScreenCTM();
+                        const inverseCTM = CTM.inverse();
+                        const svgPoint = svgElement.createSVGPoint();
+                        svgPoint.x = clientX;
+                        svgPoint.y = clientY;
+                        return svgPoint.matrixTransform(inverseCTM);
+                    } catch (e) {
+                        console.error("Error getting SVG point:", e);
+                        return null;
+                    }
+                },
+
+                startDragElectron(atomId, electronIndex, event) {
+                    this.isDraggingElectron = true;
+                    this.draggedElectron = { atomId, electronIndex };
+
+                    const svg = event.currentTarget.closest('svg');
+                    if (!svg) {
+                        console.error("SVG element not found for drag.");
+                        return;
+                    }
+
+                    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+                    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+
+                    const svgPoint = this.getSVGPoint(svg, clientX, clientY);
+                    if (!svgPoint) return;
+
+                    const atom = this.currentStep.atoms.find(a => a.id === atomId);
+                    const currentElectronLocal = this.interactiveElectrons[atomId][electronIndex];
+
+                    this.originalMouseOffset = {
+                        x: svgPoint.x - (atom.x + currentElectronLocal.x),
+                        y: svgPoint.y - (atom.y + currentElectronLocal.y)
+                    };
+
+                    document.body.classList.add('drag-active');
+                    showToast('Arrastrando electrón...', 'info', 1000);
+                },
+                doDragElectron(event) {
+                    if (!this.isDraggingElectron) return;
+
+                    event.preventDefault(); // Prevent scrolling on touch devices
+
+                    const svg = document.querySelector('.lewis-structure-container svg');
+                    if (!svg) return;
+
+                    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+                    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+
+                    const svgPoint = this.getSVGPoint(svg, clientX, clientY);
+                    if (!svgPoint) return;
+
+                    const { atomId, electronIndex } = this.draggedElectron;
+                    const atom = this.currentStep.atoms.find(a => a.id === atomId);
+
+                    // Calculate new position relative to the atom's center
+                    const newX = svgPoint.x - atom.x - this.originalMouseOffset.x;
+                    const newY = svgPoint.y - atom.y - this.originalMouseOffset.y;
+
+                    // Update Vue data for reactivity (using $set for arrays)
+                    // Clamp newX and newY to prevent electrons from going too far
+                    const maxOffset = atom.radius * 2; // Allow electrons to be dragged up to 2x atom radius away
+                    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newX));
+                    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newY));
+
+                    this.$set(this.interactiveElectrons[atomId], electronIndex, { x: clampedX, y: clampedY });
+                },
+                endDragElectron() {
+                    if (this.isDraggingElectron) {
+                        this.isDraggingElectron = false;
+                        this.draggedElectron = null;
+                        document.body.classList.remove('drag-active');
+                        showToast('Electrón soltado. (Lógica de validación de enlace no implementada)', 'info', 2000);
+                        // TODO: Implement logic to check if electron was dropped near another atom
+                        // to form a bond or lone pair, and update the molecule data accordingly.
+                        // This would involve proximity checks and updating the currentStep.bonds
+                        // or currentStep.valence_electrons_per_atom dynamically.
+                        // For a simple example, you could check distance to other atoms and "snap" the electron
+                        // to a bond position if close enough.
+                    }
+                },
+
+                // --- Animations (GSAP) ---
+                animateStepChanges() {
+                    const step = this.currentStep;
+                    if (!step) return;
+
+                    // Atom and Bond opacity reset
+                    gsap.to(this.$el.querySelectorAll('.bond-line, .electron-dot, .atom-circle, .atom-text, .formal-charge-text'), {
+                        opacity: 1,
+                        duration: 0.3,
+                        ease: "power1.out"
+                    });
+
+                    // Atom highlight animation
+                    step.atoms.forEach(atom => {
+                        // Ensure atom element is found within the current Vue component's element ($el)
+                        const atomElement = this.$el.querySelector(`[key="atom-${atom.id}"]`);
+                        if (atomElement && atom.highlighted) {
+                            gsap.fromTo(atomElement.querySelector('.atom-circle'),
+                                { scale: 0.8, opacity: 0.5 },
+                                { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }
+                            );
+                        }
+                    });
+
+                    // Bond highlight animation
+                    step.bonds.forEach(bond => {
+                        const bondElement = this.$el.querySelector(`[key="bond-${bond.id}"]`);
+                        if (bondElement && bond.highlighted) {
+                            // Using GSAP's built-in stagger for multiple lines, or drawSVG if available
+                            gsap.fromTo(bondElement,
+                                { strokeDasharray: bondElement.getTotalLength(), strokeDashoffset: bondElement.getTotalLength() },
+                                { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" }
+                            );
+                        }
+                    });
+
+                    // Custom step animations (e.g., resonance for SO4_2-)
+                    if (step.animation && step.animation.type === 'resonance') {
+                        gsap.to(this.$el.querySelectorAll('.atom-circle, .atom-text, .electron-dot, .bond-line, .formal-charge-text'), {
+                            opacity: 0.7, // Fade out non-involved elements slightly
+                            duration: 0.5
+                        });
+
+                        step.animation.targets.forEach(target => {
+                            if (target.type === 'bond') {
+                                const bondElement = this.$el.querySelector(`[key="bond-${target.id}"]`);
+                                if (bondElement) {
+                                    gsap.to(bondElement, {
+                                        strokeWidth: target.newWidth,
+                                        duration: 0.7,
+                                        ease: "power1.inOut",
+                                        opacity: 1 // Ensure involved bond is fully visible
+                                    });
+                                }
+                                // Update electron counts and formal charges for affected atoms
+                                const affectedAtom = this.currentStep.atoms.find(a => a.id === target.atomId);
+                                if (affectedAtom) {
+                                    const atomIndex = this.currentStep.atoms.findIndex(a => a.id === affectedAtom.id);
+                                    if (atomIndex !== -1) {
+                                        // Update the underlying data for the current step (non-reactive)
+                                        // Then, force a reactive update for the specific atom's electrons and formal charge
+                                        // Using $set to ensure reactivity for changes in nested objects/arrays
+                                        this.$set(this.currentStep.valence_electrons_per_atom, affectedAtom.id, target.newElectronsO);
+                                        this.$set(this.currentStep.atoms[atomIndex], 'formal_charge', target.chargeO);
+                                        
+                                        // Recalculate and update interactiveElectron positions for this specific atom
+                                        // This will trigger re-render of electrons for that atom
+                                        this.$set(this.interactiveElectrons, affectedAtom.id, getElectronPositions(target.newElectronsO, 1, affectedAtom.radius));
+                                    }
+                                }
+                            }
+                        });
+                        showToast('¡Animación de Resonancia Activa! Observa los cambios.', 'success', 4000);
+                    }
+                },
+
+                // --- Dark Mode Toggle ---
+                toggleDarkMode() {
+                    this.isDarkMode = !this.isDarkMode;
+                    document.body.classList.toggle('dark-mode', this.isDarkMode);
+                    localStorage.setItem('darkMode', this.isDarkMode);
+                    showToast(`Modo ${this.isDarkMode ? 'Oscuro' : 'Claro'} activado.`, 'info');
+                },
+                detectDarkModePreference() {
+                    const savedMode = localStorage.getItem('darkMode');
+                    if (savedMode) {
+                        this.isDarkMode = savedMode === 'true';
+                    } else {
+                        this.isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    }
+                    // Apply class on initial load
+                    document.body.classList.toggle('dark-mode', this.isDarkMode);
+                },
+
+                // --- Download Screenshot ---
+                async downloadScreenshot() {
+                    this.isLoading = true;
+                    showToast('Preparando descarga...', 'info', 2000);
+                    const element = document.getElementById('lewis-structure-area');
+                    if (!element) {
+                        showToast('Error: Área de estructura no encontrada.', 'error');
+                        this.isLoading = false;
+                        return;
+                    }
+                    
+                    // Temporarily set a background for the screenshot for better visibility
+                    const originalBg = element.style.backgroundColor;
+                    const originalBorder = element.style.border;
+                    const originalParentBg = element.parentElement.style.backgroundColor;
+
+                    // Ensure a consistent background for the capture
+                    element.style.backgroundColor = 'white';
+                    element.style.border = '1px solid #ccc'; // Add a subtle border if needed for clarity
+                    if (element.parentElement) {
+                        element.parentElement.style.backgroundColor = 'white'; // Also set parent bg
+                    }
+
+                    await html2canvas(element, {
+                        backgroundColor: null, // Let the temporary background handle it
+                        scale: 3, // Higher resolution for capture
+                        useCORS: true,
+                        logging: false, // Disable logging for cleaner console
+                        // Consider setting `width` and `height` options for html2canvas to match the desired output size
+                        // based on the current rendered size of the SVG container.
+                    }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        const link = document.createElement('a');
+                        link.href = imgData;
+                        link.download = `estructura_lewis_${this.currentMolecule.id}_paso_${this.currentStepIndex + 1}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showToast('Estructura descargada.', 'success');
+                    }).catch(error => {
+                        console.error('Error al generar la imagen:', error);
+                        showToast(`Error al descargar la estructura: ${error.message || ''}`, 'error');
+                    }).finally(() => {
+                        // Restore original styles
+                        element.style.backgroundColor = originalBg;
+                        element.style.border = originalBorder;
+                        if (element.parentElement) {
+                            element.parentElement.style.backgroundColor = originalParentBg;
+                        }
+                        this.isLoading = false;
+                    });
+                },
+                
+                // --- Tutorial/Help Modal ---
+                openTutorialModal() {
+                    this.showTutorialModal = true;
+                },
+            },
+            // Before destroy lifecycle hook for cleanup
+            beforeDestroy() {
+                document.removeEventListener('mouseup', this.endDragElectron);
+                document.removeEventListener('touchend', this.endDragElectron);
+                document.removeEventListener('mousemove', this.doDragElectron);
+                document.removeEventListener('touchmove', this.doDragElectron);
+            }
+        });
+        // JavaScript Logic - Fin
+    </script>
+</body>
+</html>
